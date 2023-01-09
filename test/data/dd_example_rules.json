@@ -1,0 +1,36 @@
+{
+  "0": {
+    "rules": [],
+    "constraints": [
+      {
+        "__type__": "Constraint",
+        "__contents__": {
+          "variables": [
+            "x"
+          ],
+          "application": {
+            "__type__": "ComparatorExpression",
+            "__contents__": {
+              "comparator": "==",
+              "left_expression": {
+                "__type__": "Field",
+                "__contents__": {
+                  "variable_name": "x",
+                  "field_name": "instrument_name"
+                }
+              },
+              "right_expression": {
+                "__type__": "StringConstant",
+                "__contents__": {
+                  "value": "OWLS"
+                }
+              }
+            }
+          },
+          "sum_field": null,
+          "constraint_value": 3.0
+        }
+      }
+    ]
+  }
+}

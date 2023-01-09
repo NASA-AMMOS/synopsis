@@ -1,0 +1,90 @@
+{
+  "functions": {
+    "default": [
+      {
+        "key": ["SFI", "zoom"],
+        "function": {
+          "diversity_descriptor": [
+            "DD01",
+            "DD02",
+            "DD03",
+            "DD04",
+            "DD05",
+            "DD06",
+            "DD07",
+            "DD08",
+            "DD09",
+            "DD10",
+            "DD11",
+            "DD12",
+            "DD13",
+            "DD14",
+            "DD15",
+            "DD16"
+          ],
+          "weights": [
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0
+          ],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 1.5
+          }
+        }
+      },
+      {
+        "key": ["SFI", "flat"],
+        "function": {
+          "diversity_descriptor": ["DD01"],
+          "weights": [1.0],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 1.0
+          }
+        }
+      },
+      {
+        "key": ["SFI", "cntx"],
+        "function": {
+          "diversity_descriptor": [
+            "DD01", "DD02", "DD03", "DD04",
+            "DD05", "DD06", "DD07", "DD08",
+            "DD09", "DD10", "DD11", "DD12",
+            "DD13", "DD14", "DD15", "DD16",
+            "DD17", "DD18", "DD19", "DD20",
+            "DD21", "DD22", "DD23", "DD24",
+            "DD25", "DD26", "DD27", "DD28",
+            "DD29", "DD30", "DD31", "DD32",
+            "DD33", "DD34", "DD35", "DD36",
+            "DD37", "DD38", "DD39", "DD40",
+            "DD41", "DD42", "DD43", "DD44",
+            "DD45", "DD46", "DD47", "DD48",
+            "DD49", "DD50", "DD51", "DD52",
+            "DD53", "DD54", "DD55", "DD56",
+            "DD57", "DD58", "DD59", "DD60",
+            "DD61", "DD62", "DD63", "DD64"
+          ],
+          "weights": [
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+          ],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 5.5
+          }
+        }
+      }
+    ]
+  },
+  "alphas": {
+    "default": 1.0
+  }
+}

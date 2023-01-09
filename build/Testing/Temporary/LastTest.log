@@ -1,0 +1,138 @@
+Start testing: Jun 14 14:43 MST
+----------------------------------------------------------
+1/5 Testing: SynopsisTest.TestApplicationInterface
+1/5 Test: SynopsisTest.TestApplicationInterface
+Command: "/Users/jackal/Documents/SYNOPSIS/synopsis/build/synopsis_test" "--gtest_filter=SynopsisTest.TestApplicationInterface" "--gtest_also_run_disabled_tests"
+Directory: /Users/jackal/Documents/SYNOPSIS/synopsis/build
+"SynopsisTest.TestApplicationInterface" start time: Jun 14 14:43 MST
+Output:
+----------------------------------------------------------
+Running main() from /Users/jackal/Documents/SYNOPSIS/synopsis/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SynopsisTest.TestApplicationInterface
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SynopsisTest
+[ RUN      ] SynopsisTest.TestApplicationInterface
+[       OK ] SynopsisTest.TestApplicationInterface (0 ms)
+[----------] 1 test from SynopsisTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"SynopsisTest.TestApplicationInterface" end time: Jun 14 14:43 MST
+"SynopsisTest.TestApplicationInterface" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/5 Testing: SynopsisTest.TestDpMsg
+2/5 Test: SynopsisTest.TestDpMsg
+Command: "/Users/jackal/Documents/SYNOPSIS/synopsis/build/synopsis_test" "--gtest_filter=SynopsisTest.TestDpMsg" "--gtest_also_run_disabled_tests"
+Directory: /Users/jackal/Documents/SYNOPSIS/synopsis/build
+"SynopsisTest.TestDpMsg" start time: Jun 14 14:43 MST
+Output:
+----------------------------------------------------------
+Running main() from /Users/jackal/Documents/SYNOPSIS/synopsis/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SynopsisTest.TestDpMsg
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SynopsisTest
+[ RUN      ] SynopsisTest.TestDpMsg
+[       OK ] SynopsisTest.TestDpMsg (0 ms)
+[----------] 1 test from SynopsisTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"SynopsisTest.TestDpMsg" end time: Jun 14 14:43 MST
+"SynopsisTest.TestDpMsg" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/5 Testing: SynopsisTest.TestASDPDB
+3/5 Test: SynopsisTest.TestASDPDB
+Command: "/Users/jackal/Documents/SYNOPSIS/synopsis/build/synopsis_test" "--gtest_filter=SynopsisTest.TestASDPDB" "--gtest_also_run_disabled_tests"
+Directory: /Users/jackal/Documents/SYNOPSIS/synopsis/build
+"SynopsisTest.TestASDPDB" start time: Jun 14 14:43 MST
+Output:
+----------------------------------------------------------
+Running main() from /Users/jackal/Documents/SYNOPSIS/synopsis/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SynopsisTest.TestASDPDB
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SynopsisTest
+[ RUN      ] SynopsisTest.TestASDPDB
+[       OK ] SynopsisTest.TestASDPDB (2 ms)
+[----------] 1 test from SynopsisTest (2 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"SynopsisTest.TestASDPDB" end time: Jun 14 14:43 MST
+"SynopsisTest.TestASDPDB" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/5 Testing: SynopsisTest.TestApplicationASDPDBInterfaces
+4/5 Test: SynopsisTest.TestApplicationASDPDBInterfaces
+Command: "/Users/jackal/Documents/SYNOPSIS/synopsis/build/synopsis_test" "--gtest_filter=SynopsisTest.TestApplicationASDPDBInterfaces" "--gtest_also_run_disabled_tests"
+Directory: /Users/jackal/Documents/SYNOPSIS/synopsis/build
+"SynopsisTest.TestApplicationASDPDBInterfaces" start time: Jun 14 14:43 MST
+Output:
+----------------------------------------------------------
+Running main() from /Users/jackal/Documents/SYNOPSIS/synopsis/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SynopsisTest.TestApplicationASDPDBInterfaces
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SynopsisTest
+[ RUN      ] SynopsisTest.TestApplicationASDPDBInterfaces
+[       OK ] SynopsisTest.TestApplicationASDPDBInterfaces (1 ms)
+[----------] 1 test from SynopsisTest (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"SynopsisTest.TestApplicationASDPDBInterfaces" end time: Jun 14 14:43 MST
+"SynopsisTest.TestApplicationASDPDBInterfaces" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/5 Testing: SynopsisTest.TestPassThroughASDS
+5/5 Test: SynopsisTest.TestPassThroughASDS
+Command: "/Users/jackal/Documents/SYNOPSIS/synopsis/build/synopsis_test" "--gtest_filter=SynopsisTest.TestPassThroughASDS" "--gtest_also_run_disabled_tests"
+Directory: /Users/jackal/Documents/SYNOPSIS/synopsis/build
+"SynopsisTest.TestPassThroughASDS" start time: Jun 14 14:43 MST
+Output:
+----------------------------------------------------------
+Running main() from /Users/jackal/Documents/SYNOPSIS/synopsis/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = SynopsisTest.TestPassThroughASDS
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SynopsisTest
+[ RUN      ] SynopsisTest.TestPassThroughASDS
+[       OK ] SynopsisTest.TestPassThroughASDS (2 ms)
+[----------] 1 test from SynopsisTest (2 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"SynopsisTest.TestPassThroughASDS" end time: Jun 14 14:43 MST
+"SynopsisTest.TestPassThroughASDS" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Jun 14 14:43 MST

@@ -1,0 +1,5 @@
+if(EXISTS "/Users/jackal/Documents/SYNOPSIS/synopsis/build/synopsis_test[1]_tests.cmake")
+  include("/Users/jackal/Documents/SYNOPSIS/synopsis/build/synopsis_test[1]_tests.cmake")
+else()
+  add_test(synopsis_test_NOT_BUILT synopsis_test_NOT_BUILT)
+endif()

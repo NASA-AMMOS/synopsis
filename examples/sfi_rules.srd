@@ -1,0 +1,13 @@
+# Rules for Surface Fluorescence Imager (SFI) Instrument use case
+
+# Default rules across bins
+DEFAULT:
+
+# If a context image has no associated zoom observation, subtract half its SUE
+RULE (x):
+APPLIES x.instrument == "SFI" AND x.type == "cntx"
+    AND NOT EXISTS y: (
+        y.instrument == "SFI" AND y.type == "zoom"
+        AND x.time == y.cntx_time
+    )
+ADJUST UTILITY -0.5 * x.final_science_utility_estimate;

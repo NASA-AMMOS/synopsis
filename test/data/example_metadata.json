@@ -1,0 +1,9 @@
+{
+  "science_utility_estimate": 0.123,
+  "priority_bin": 7,
+  "metadata" : {
+    "metadata_field_int": 123,
+    "metadata_field_float": 1.23,
+    "metadata_field_string": "hello world"
+  }
+}

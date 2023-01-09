@@ -1,0 +1,34 @@
+{
+  "functions": {
+    "default": [
+      {
+        "key": ["OWLS", "ACME"],
+        "function": {
+          "diversity_descriptor": ["background_avg", "unique_masses"],
+          "weights": [1.0, 0.5],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 1.34289567767
+          }
+        }
+      }
+    ],
+    "7": [
+      {
+        "key": ["OWLS", "ACME"],
+        "function": {
+          "diversity_descriptor": ["background_avg", "unique_masses"],
+          "weights": [1.0, 0.5],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 1.34289567767
+          }
+        }
+      }
+    ]
+  },
+  "alphas": {
+    "default": 1.0,
+    "7": 1.0
+  }
+}

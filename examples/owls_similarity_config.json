@@ -1,0 +1,40 @@
+{
+  "functions": {
+    "default": [
+      {
+        "key": ["owls", "helm"],
+        "function": {
+          "diversity_descriptor": [
+            "bbox_area_min_pc10.0",
+            "bbox_area_min_pc50.0",
+            "bbox_area_min_pc90.0",
+            "disp_e2e_norm_pc10.0",
+            "disp_e2e_norm_pc50.0",
+            "disp_e2e_norm_pc90.0",
+            "speed_mean_pc10.0",
+            "speed_mean_pc50.0",
+            "speed_mean_pc90.0"
+          ],
+          "weights": [
+            1e6,
+            1e5,
+            1e4,
+            1e5,
+            1e4,
+            1e3,
+            1e3,
+            1e3,
+            1e2
+          ],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 42.0
+          }
+        }
+      }
+    ]
+  },
+  "alphas": {
+    "default": 1.0
+  }
+}

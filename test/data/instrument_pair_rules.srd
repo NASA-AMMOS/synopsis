@@ -1,0 +1,14 @@
+DEFAULT:
+
+CONSTRAINT(x):
+APPLIES x.instrument_name == "SFI"
+SUM x.size
+LESS THAN 3;
+
+RULE (x):
+APPLIES (x.instrument_name == "SFI" AND x.type == "ZOOM")
+        AND NOT EXISTS y: (
+          (y.instrument_name == "SFI" AND y.type == "CTX")
+          AND x.context_image_id == y.id
+        )
+ADJUST UTILITY -0.5 * x.science_utility_estimate;
