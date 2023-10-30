@@ -1,1 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/c++  -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/synopsis_test.dir/test/synopsis_test.cpp.o -o synopsis_test  -Wl,-rpath,/Users/jackal/Documents/SYNOPSIS/synopsis/build lib/libgtest_main.a libsynopsis.0.8.0.dylib lib/libgtest.a 
