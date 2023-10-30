@@ -6,6 +6,7 @@
 **/
 
 #include "Sqlite3Statement.hpp"
+#include<iostream>
 
 namespace Synopsis {
 
@@ -102,6 +103,7 @@ namespace Synopsis {
   void Sqlite3Statement::throwIfError(sqlite3* db, int rc, const std::string& prefix)
   {
     if (rc != SQLITE_ROW && rc != SQLITE_OK && rc != SQLITE_DONE) {
+      // std::cout <<  "SQL error: " << std::string(sqlite3_errmsg(db)) << std::endl;
       throw (prefix + std::string(sqlite3_errmsg(db)));
     }
   }

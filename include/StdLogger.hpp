@@ -19,19 +19,30 @@ namespace Synopsis {
         public:
 
             /**
+             * Constructs an StdLogger instance
+             *
+             * @param[in] output_all_to_stderr: output logs to stderr stream
+             */
+            StdLogger(bool output_all_to_stderr = false);
+
+            /**
              * Default virtual destructor
              */
             virtual ~StdLogger() = default;
 
-
             /**
              * @see: Logger:log
              */
-            void log(LogType type, const char* fmt, ...);
+            void log(LogType type, const char* file, const int line, const char* fmt,  ...);
 
+        private:
+
+            /**
+             * output all logs to stderr stream
+             */
+            bool output_all_to_stderr;
 
     };
-
 
 };
 

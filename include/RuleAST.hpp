@@ -17,16 +17,14 @@
 
 #include "synopsis_types.hpp"
 #include "DpDbMsg.hpp"
-
+#include "Logger.hpp"
 
 namespace Synopsis {
-
 
     /**
      * An abstract generic expression within a rule or constraint definition.
      */
     class RuleExpression {
-
 
         public:
 
@@ -34,6 +32,33 @@ namespace Synopsis {
              * Default virtual destructor
              */
             virtual ~RuleExpression() = default;
+
+            // declare function set_parent which gets called when children are defined. Create protected members of the RuleExpression class to point to. Do we need this still?
+            
+            /**
+             * Sets the logger instance to be used for this expression
+             *
+             * @param[in] logger: pointer to a logger instance to be used by
+             * the module
+             *
+             */
+            void set_logger( Logger* logger );
+
+
+            // /**
+            //  * Logs a message of the specified type, using a format string with
+            //  * arguments.
+            //  *
+            //  * @param[in] type: log message type
+            //  * @param[in] fmt: C-style format string
+            //  * @param[in] ...: variable argument list for format string
+            //  */
+            // void log(LogType type, const char* fmt, ...); // declare log function to actually do the logging, this would do a null pointer check first, in which case don't do any logging. define it the same way as the log function in logger.h. See if this is easy to do otherwise just call the logger.h's log
+            
+        protected:
+            /* Reference to the logger instance to be used by this module
+            */
+            Logger *_logger = nullptr; 
 
 
     };
@@ -121,12 +146,15 @@ namespace Synopsis {
              * @param[in] max_applications: the maximum number of times this
              * rule should be applied; a negative value indicates that there is
              * no limit
+             * @param[in] logger: pointer to a logger instance to be used by 
+             * the module
              */
             Rule(
                 std::vector<std::string> variables,
                 BoolValueExpression *application_expression,
                 ValueExpression *adjustment_expression,
-                int max_applications
+                int max_applications,
+                Logger *logger
             );
 
             /**
@@ -168,6 +196,10 @@ namespace Synopsis {
              */
             int _max_applications;
 
+            /**
+             * Reference to the logger instance to be used by this module
+             */
+            Logger *_logger = nullptr;
 
     };
 
@@ -194,12 +226,15 @@ namespace Synopsis {
              * @param[in] constraint_value: the constraint upper bound; the
              * constraint is satisfied if the aggregate value is strictly less
              * than this amount
+             * @param[in] logger: pointer to a logger instance to be used by 
+             * the module
              */
             Constraint(
                 std::vector<std::string> variables,
                 BoolValueExpression *application_expression,
                 ValueExpression *sum_field,
-                double constraint_value
+                double constraint_value,
+                Logger *logger
             );
 
             /**
@@ -242,6 +277,11 @@ namespace Synopsis {
              */
             double _constraint_value;
 
+            /**
+             * Reference to the logger instance to be used by this module
+             */
+            Logger *_logger = nullptr;
+
 
     };
 
@@ -282,12 +322,15 @@ namespace Synopsis {
              * unspecified bins
              * @param[in] default_constraints: a list of default constraints to
              * use for all unspecified bins
+             * @param[in] logger: pointer to a logger instance to be used by 
+             * the module
              */
             RuleSet(
                 std::map<int, RuleList> rule_map,
                 std::map<int, ConstraintList> constraint_map,
                 RuleList default_rules,
-                ConstraintList default_constraints
+                ConstraintList default_constraints,
+                Logger *logger
             );
 
             /**
@@ -307,13 +350,16 @@ namespace Synopsis {
              * use for all unspecified bins
              * @param[in] expressions: a list of pointers to AST expressions
              * used by this rule set
+             * @param[in] logger: pointer to a logger instance to be used by 
+             * the module
              */
             RuleSet(
                 std::map<int, RuleList> rule_map,
                 std::map<int, ConstraintList> constraint_map,
                 RuleList default_rules,
                 ConstraintList default_constraints,
-                std::vector<std::shared_ptr<RuleExpression>> expressions
+                std::vector<std::shared_ptr<RuleExpression>> expressions,
+                Logger *logger
             );
 
             /**
@@ -383,8 +429,12 @@ namespace Synopsis {
             /**
              * Stores a list of references to dynamically allocated expressions
              */
-            std::vector<std::shared_ptr<RuleExpression>> _expressions;
+            std::vector<std::shared_ptr<RuleExpression>> _expressions;  // TODO: double check shared_ptr's get dynamically deallocated
 
+            /**
+             * Reference to the logger instance to be used by this module
+             */
+            Logger *_logger = nullptr;
     };
 
 
@@ -854,7 +904,7 @@ namespace Synopsis {
      * @return: the parsed rule set, or an empty rule set if the configuration
      * file string is empty
      */
-    RuleSet parse_rule_config(std::string config_file);
+    RuleSet parse_rule_config(std::string config_file, Logger *logger);
 
 
 };

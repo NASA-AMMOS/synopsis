@@ -109,6 +109,15 @@ namespace Synopsis {
                 int asdp_id, std::string fieldname, DpMetadataValue value) = 0;
 
 
+            /**
+             * Check if DB has been initialized
+             *
+             *
+             * @return: True if the DB has been initialized
+             */
+            virtual bool is_initialized(void) = 0;
+
+
     };
 
 

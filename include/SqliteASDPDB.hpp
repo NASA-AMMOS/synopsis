@@ -128,6 +128,15 @@ namespace Synopsis {
             Status update_metadata(int asdp_id, std::string fieldname, T value);
 
 
+            /**
+             * Check if DB has been initialized
+             *
+             *
+             * @return: True if the DB has been initialized
+             */
+            bool is_initialized(void);
+
+
         private:
 
             /**
@@ -140,6 +149,10 @@ namespace Synopsis {
              */
             sqlite3* _db;
 
+            /**
+             * Status of DB initialization
+             */
+            bool _initialized;
 
     };
 

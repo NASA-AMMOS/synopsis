@@ -24,10 +24,11 @@ namespace Synopsis {
 
 
     Status ASDS::submit_data_product(DpDbMsg msg) {
-        if(this->_db == nullptr) {
-            // TODO: Log no DB instance available
+        if(this->_db == nullptr || !this->_db->is_initialized()) {
+            LOG(this->_logger, Synopsis::LogType::ERROR, "no initialized DB available while submitting data product");
             return FAILURE;
-        }
+        } 
+
         return this->_db->insert_data_product(msg);
     }
 
@@ -51,7 +52,8 @@ namespace Synopsis {
             if (j_sue.is_number()) {
                 sue = j_sue.get<double>();
             } else {
-                // TODO: Log bad SUE type
+                LOG(this->_logger, Synopsis::LogType::ERROR, "Non-numeric ASDP SUE metadata value in submit_data_product");
+                return FAILURE;
             }
 
             // Extract Priority Bin
@@ -59,7 +61,8 @@ namespace Synopsis {
             if (j_bin.is_number_integer()) {
                 priority_bin = j_bin.get<int>();
             } else {
-                // TODO: Log bad bin type
+                LOG(this->_logger, Synopsis::LogType::ERROR,"Bin is not an integer in submit_data_product");
+                return FAILURE;
             }
 
             auto j_meta = j["metadata"];
@@ -83,15 +86,16 @@ namespace Synopsis {
 
                     } else {
                         // Log unsupported metadata type
+                        
                     }
 
                 }
             } else {
-                // TODO: Log bad metadata type
+                LOG(this->_logger, Synopsis::LogType::ERROR, "Metadata JSON value is not a (key, value) pair in submit_data_product");
+                return FAILURE;
             }
-
         } else {
-            // TODO: Log warning that no metadata provided
+            LOG(this->_logger, Synopsis::LogType::WARN, "No metadata provided in submit_data_product");
         }
 
         DpDbMsg db_msg(

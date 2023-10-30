@@ -18,6 +18,7 @@
 
 #include "synopsis_types.hpp"
 #include "DpDbMsg.hpp"
+#include "Logger.hpp"
 
 
 namespace Synopsis {
@@ -90,7 +91,8 @@ namespace Synopsis {
                 std::vector<std::string> diversity_descriptors,
                 std::vector<double> dd_factors,
                 std::string similarity_type,
-                SimParamMap similarity_params
+                SimParamMap similarity_params, 
+                Logger *logger // if log messages need to come from SimilarityFunction then pass a logger here
             );
 
             /**
@@ -141,6 +143,11 @@ namespace Synopsis {
              */
             SimParamMap _similarity_params;
 
+            /**
+             * Reference to the logger instance to be used by this module
+             */
+            Logger *_logger = nullptr;
+
 
     };
 
@@ -182,7 +189,8 @@ namespace Synopsis {
                 std::map<int, double> alpha,
                 double default_alpha,
                 std::map<int, SimFuncMap> functions,
-                SimFuncMap default_functions
+                SimFuncMap default_functions,
+                Logger *logger
             );
 
             /**
@@ -281,6 +289,11 @@ namespace Synopsis {
              */
             std::map<std::pair<int, int>, double> _cache;
 
+            /**
+             * Reference to the logger instance to be used by this module
+             */
+            Logger *_logger = nullptr;
+
 
     };
 
@@ -292,7 +305,7 @@ namespace Synopsis {
      *
      * @return: parsed similarity configuration
      */
-    Similarity parse_similarity_config(std::string config_file);
+    Similarity parse_similarity_config(std::string config_file, Logger *logger);
 
 
 };

@@ -31,7 +31,7 @@ namespace Synopsis {
         public:
 
             /**
-             * Default constructor creates an value
+             * Default constructor creates a value
              */
             DpMetadataValue();
 

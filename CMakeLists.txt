@@ -56,7 +56,7 @@ add_executable(
 )
 target_include_directories(synopsis_cli PRIVATE include)
 target_link_libraries(
-  synopsis_cli
+  synopsis_cli PRIVATE nlohmann_json::nlohmann_json
   synopsis
 )
 
@@ -75,7 +75,15 @@ target_link_libraries(
   synopsis
 )
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+target_link_libraries(synopsis PRIVATE Threads::Threads)
+
 include(GoogleTest)
 gtest_discover_tests(synopsis_test PROPERTIES ENVIRONMENT
   "SYNOPSIS_TEST_DATA=${CMAKE_CURRENT_LIST_DIR}/test/data"
 )
+
+include(test/CodeCoverage.cmake)
+APPEND_COVERAGE_COMPILER_FLAGS()

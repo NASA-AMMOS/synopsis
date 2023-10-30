@@ -21,7 +21,7 @@ namespace Synopsis {
      *
      * @return: mapping from similarity function keys to functions
      */
-    SimFuncMap _parse_function_list(nlohmann::json flist);
+    SimFuncMap _parse_function_list(nlohmann::json flist, Logger *logger);
 
 
     double _sq_euclidean_dist(
@@ -54,12 +54,14 @@ namespace Synopsis {
         std::vector<std::string> diversity_descriptors,
         std::vector<double> dd_factors,
         std::string similarity_type,
-        SimParamMap similarity_params
+        SimParamMap similarity_params,
+        Logger *logger
     ) :
         _diversity_descriptors(diversity_descriptors),
         _dd_factors(dd_factors),
         _similarity_type(similarity_type),
-        _similarity_params(similarity_params)
+        _similarity_params(similarity_params),
+        _logger(logger)
     {
 
     }
@@ -103,11 +105,11 @@ namespace Synopsis {
             if (this->_similarity_params.count("sigma")) {
                 sigma = this->_similarity_params["sigma"];
             } else {
-                // TODO: Log warning about missing parameter
+                LOG(this->_logger, Synopsis::LogType::WARN, "Missing parameter in get_similarity");
             }
             similarity = _gaussian_similarity(sigma, dd1, dd2);
         } else {
-            // TODO: Log unknown similarity type
+            LOG(this->_logger, Synopsis::LogType::WARN, "Unknown similarity type in get_similarity");
         }
 
         // TODO: Implement
@@ -119,13 +121,14 @@ namespace Synopsis {
         std::map<int, double> alpha,
         double default_alpha,
         std::map<int, SimFuncMap> functions,
-        std::map<SimKey, SimilarityFunction
-        > default_functions
+        std::map<SimKey, SimilarityFunction> default_functions,
+        Logger *logger
     ) :
         _alpha(alpha),
         _default_alpha(default_alpha),
         _functions(functions),
-        _default_functions(default_functions)
+        _default_functions(default_functions),
+        _logger(logger)
     {
 
     }
@@ -235,14 +238,14 @@ namespace Synopsis {
     }
 
 
-    SimFuncMap _parse_function_list(nlohmann::json flist) {
+    SimFuncMap _parse_function_list(nlohmann::json flist, Logger *logger) {
 
         SimFuncMap functions;
         SimKey key;
 
         for (auto& f : flist) {
             if (!f.is_object()) {
-                // TODO: log bad function type
+                LOG(logger, Synopsis::LogType::ERROR, "Bad function type in parse_function_list");
                 continue;
             }
 
@@ -256,7 +259,7 @@ namespace Synopsis {
                     j_key[1].get<std::string>()
                 );
             } else {
-                // TODO: log bad function key type/size
+                LOG(logger, Synopsis::LogType::ERROR, "Bad function key type/size in parse_function_list");
                 continue;
             }
 
@@ -264,7 +267,7 @@ namespace Synopsis {
             // TODO: handle keys missing
             auto j_func = f["function"];
             if (!j_func.is_object()) {
-                // TODO: log bad j_func type
+                LOG(logger, Synopsis::LogType::ERROR, "Bad j_func type in parse_function_list");
                 continue;
             }
 
@@ -276,24 +279,24 @@ namespace Synopsis {
 
             // Check types
             if (!j_dd.is_array()) {
-                // TODO: log bad type
+                LOG(logger, Synopsis::LogType::ERROR, "Bad diversity_descriptor type in parse_function_list, should be array");
                 continue;
             }
             if (!j_weights.is_array()) {
-                // TODO: log bad type
+                LOG(logger, Synopsis::LogType::ERROR, "Bad weights type in parse_function_list, should be array");
                 continue;
             }
             if (!j_sim_type.is_string()) {
-                // TODO: log bad type
+                LOG(logger, Synopsis::LogType::ERROR, "Bad similarity_type type in parse_function_list, should be string");
                 continue;
             }
             if (!j_sim_param.is_object()) {
-                // TODO: log bad type
+                LOG(logger, Synopsis::LogType::ERROR, "Bad similarity_parameters type in parse_function_list, should be object");
                 continue;
             }
 
             if (j_dd.size() != j_weights.size()) {
-                // TODO: log mismatch
+                LOG(logger, Synopsis::LogType::ERROR, "Size mismatch between diversity_descriptor and weights in parse_function_list");
                 continue;
             }
 
@@ -306,12 +309,12 @@ namespace Synopsis {
             for (int i = 0; i < j_dd.size(); i++) {
                 auto j_dd_i = j_dd[i];
                 if (!j_dd_i.is_string()) {
-                    // TODO: warn
+                    LOG(logger, Synopsis::LogType::WARN, "DD is not a string in _parse_function_list");
                     continue;
                 }
                 auto j_weight_i = j_weights[i];
                 if (!j_weight_i.is_number()) {
-                    // TODO: warn
+                    LOG(logger, Synopsis::LogType::WARN, "Weight is not a number in _parse_function_list");
                     continue;
                 }
                 dds.push_back(j_dd_i.get<std::string>());
@@ -324,14 +327,14 @@ namespace Synopsis {
                 std::string p_key = j_p_el.key();
                 auto val = j_p_el.value();
                 if (!val.is_number()) {
-                    // TODO: log error
+                    LOG(logger, Synopsis::LogType::ERROR, "Wrong type for val in parse_function_list, should be number");
                     continue;
                 }
                 similarity_params[p_key] = val.get<double>();
             }
 
             SimilarityFunction func = SimilarityFunction(
-                dds, dd_factors, similarity_type, similarity_params
+                dds, dd_factors, similarity_type, similarity_params, logger
             );
             functions.insert(std::make_pair(key, func));
 
@@ -341,11 +344,11 @@ namespace Synopsis {
     }
 
 
-    Similarity parse_similarity_config(std::string config_file) {
+    Similarity parse_similarity_config(std::string config_file, Logger *logger) {
 
         // If no config file provided, return default configuration
         if (config_file.size() == 0) {
-            return Similarity({}, 1.0, {}, {});
+            return Similarity({}, 1.0, {}, {}, logger);
         }
 
         std::ifstream file_input(config_file);
@@ -367,7 +370,7 @@ namespace Synopsis {
                 if (val.is_number()) {
                     dval = val.get<double>();
                 } else {
-                    // TODO: log bad alpha entry type
+                    LOG(logger, Synopsis::LogType::ERROR, "Bad alpha entry type in parse_similarity_config, should be number");
                     continue;
                 }
 
@@ -378,13 +381,13 @@ namespace Synopsis {
                         int ikey = std::stoi(key);
                         alpha[ikey] = dval;
                     } catch ( std::invalid_argument & e ) {
-                        // TODO: log bad alpha key type
+                        LOG(logger, Synopsis::LogType::ERROR, "Bad alpha key type in parse_similarity_config");
                         continue;
                     }
                 }
             }
         } else {
-            // TODO: log bad "alphas" type
+            LOG(logger, Synopsis::LogType::ERROR, "Bad alphas type in parse_similarity_config, should be object");
         }
 
         // Parse similarity functions
@@ -404,9 +407,9 @@ namespace Synopsis {
                 SimFuncMap _functions;
 
                 if (val.is_array()) {
-                    _functions = _parse_function_list(val);
+                    _functions = _parse_function_list(val, logger);
                 } else {
-                    // TODO: log bad functions entry type
+                    LOG(logger, Synopsis::LogType::ERROR, "Bad function entry type in parse_similarity_config, should be array");
                     continue;
                 }
 
@@ -417,19 +420,18 @@ namespace Synopsis {
                         int ikey = std::stoi(key);
                         functions[ikey] = _functions;
                     } catch ( std::invalid_argument & e ) {
-                        // TODO: log bad function key type
+                        LOG(logger, Synopsis::LogType::ERROR, "Bad function key type in parse_similarity_config");
                         continue;
                     }
                 }
 
             }
         } else {
-            // TODO: log bad "functions" type
+            LOG(logger, Synopsis::LogType::ERROR, "Bad function type in parse_similarity_config, should be object");
         }
 
         Similarity similarity(
-            alpha, default_alpha,
-            functions, default_functions
+            alpha, default_alpha, functions, default_functions, logger
         );
         return similarity;
     }

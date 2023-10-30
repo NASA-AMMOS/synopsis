@@ -41,7 +41,7 @@ namespace Synopsis {
         double cumulative_sue = 0.0;
 
         for (int i = 0; i < maxiter; i++) {
-
+            std::cout <<  "Prioritize Step 2 >>>  looping over ASDP list item # " << i+1 << "/" << maxiter << std::endl;
             int idx = -1;
             int best_idx = -1;
             double best_value = 0.0;
@@ -143,18 +143,21 @@ namespace Synopsis {
         timer.start();
 
         // Parse/Load RuleSet
-        RuleSet ruleset = parse_rule_config(rule_configuration_id);
+        RuleSet ruleset = parse_rule_config(rule_configuration_id, this->_logger);
 
         // Load similarity configuration
         Similarity similarity = \
-            parse_similarity_config(similarity_configuration_id);
+            parse_similarity_config(similarity_configuration_id, this->_logger);
 
         // Load ASDPs
         std::vector<int> dp_ids = this->_db->list_data_product_ids();
         std::map<int, AsdpList> binned_asdps;
         AsdpList transmitted;
         DpDbMsg msg;
+        
+        std::cout <<  "Prioritize Step 1 > Load ASDPs" << std::endl;
         for (int dp_id : dp_ids) {
+            std::cout <<  "Prioritize Step 1 >> loading ASDP ID: " << dp_id << std::endl;
             Status status = this->_db->get_data_product(dp_id, msg);
             if (status != SUCCESS) { return status; }
 
@@ -166,7 +169,7 @@ namespace Synopsis {
             AsdpEntry asdp;
             status = _populate_asdp(msg, asdp);
             if (status != SUCCESS) {
-                // TODO: Log Error
+                LOG(this->_logger, Synopsis::LogType::ERROR, "Error populating ASDP for DP id: %ld", dp_id);
                 return status;
             }
 
@@ -188,8 +191,13 @@ namespace Synopsis {
         }
 
         // Prioritize each bin (assumes entries are traversed in bin order)
+        std::cout <<  "Prioritize Step 2 > prioritize bins" << std::endl;
+        int prioritize_loop_index = 0;
+        int num_bins_to_prioritize = binned_asdps.size();
         for (auto &entry : binned_asdps) {
             int bin = entry.first;
+            std::cout <<  "Prioritize Step 2 >> prioritize bin index: " << prioritize_loop_index << "/" << num_bins_to_prioritize << " (bin = " << bin << ")" << std::endl;
+            prioritize_loop_index++;
             auto &asdps = entry.second;
             std::vector<int> prioritized_bin = _prioritize_bin(
                 bin, asdps, ruleset, similarity

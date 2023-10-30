@@ -13,6 +13,9 @@
 
 namespace Synopsis {
 
+    void RuleExpression::set_logger(Logger *logger) {
+        this->_logger = logger;
+    }
 
     /**
      * Determine the object type within the JSON AST representation using the
@@ -24,7 +27,7 @@ namespace Synopsis {
      *
      * @return: string object type
      */
-    std::string _get_obj_type(nlohmann::json &j_obj, Status& status);
+    std::string _get_obj_type(nlohmann::json &j_obj, Status& status, Logger *logger);
 
     /**
      * Get JSON argument object from an AST element within the `__contents__`
@@ -38,7 +41,7 @@ namespace Synopsis {
      * @return: SUCCESS if the argument exists; or an error code
      */
     Status _get_argument_obj(
-        nlohmann::json *result, nlohmann::json &j_obj, std::string arg
+        nlohmann::json *result, nlohmann::json &j_obj, std::string arg, Logger *logger
     );
 
     /**
@@ -57,7 +60,8 @@ namespace Synopsis {
     template<class T> T _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     );
 
     /**
@@ -74,7 +78,8 @@ namespace Synopsis {
     Rule _parse_rule(
         nlohmann::json &j_rule,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     );
 
     /**
@@ -91,7 +96,8 @@ namespace Synopsis {
     Constraint _parse_constraint(
         nlohmann::json &j_constraint,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     );
 
     /**
@@ -107,7 +113,8 @@ namespace Synopsis {
     std::pair<RuleList, ConstraintList>
     _parse_bin(
             nlohmann::json &j_bin,
-            std::vector<std::shared_ptr<RuleExpression>> &exprs
+            std::vector<std::shared_ptr<RuleExpression>> &exprs,
+            Logger *logger
     );
 
 
@@ -115,12 +122,14 @@ namespace Synopsis {
         std::vector<std::string> variables,
         BoolValueExpression *application_expression,
         ValueExpression *adjustment_expression,
-        int max_applications
+        int max_applications,
+        Logger *logger
     ) :
         _variables(variables),
         _application_expression(application_expression),
         _adjustment_expression(adjustment_expression),
-        _max_applications(max_applications)
+        _max_applications(max_applications),
+        _logger(logger)
     {
 
     }
@@ -142,9 +151,9 @@ namespace Synopsis {
                         total_adj_value += adj.get_numeric();
                         n_applications += 1;
                     } else {
-                        // TODO: Log error, no application/adjustment
+                        LOG(this->_logger, Synopsis::LogType::ERROR, "Applicaton/adjustment failed due to non-numeric adjustment value");
                     }
-                    // TODO: Log application of rule?
+                    // TODO: Log application of rule. Should this print the adjustment? 
                     if ((_max_applications >= 0) && (n_applications >= _max_applications)) {
                         break;
                     }
@@ -165,19 +174,23 @@ namespace Synopsis {
                             total_adj_value += adj.get_numeric();
                             n_applications += 1;
                         } else {
-                            // TODO: Log error, no application/adjustment
+                            LOG(this->_logger, Synopsis::LogType::ERROR,"No application/adjustment, adjustment expression should be numeric");
                         }
-                        // TODO: Log application of rule?
+                        // TODO: Log application of rule. Should this print the adjustment?
                         if ((_max_applications >= 0) && (n_applications >= _max_applications)) {
                             break;
                         }
                     }
+                }
+                if ((_max_applications >= 0) && (n_applications >= _max_applications)) {
+                    break;
                 }
             }
             return total_adj_value;
 
         } else {
             // TODO: Case not handled
+            LOG(this->_logger, Synopsis::LogType::ERROR,"Ignoring rules with more than 2 variables specified; currently unsupported");
             return total_adj_value;
         }
 
@@ -190,12 +203,14 @@ namespace Synopsis {
         std::vector<std::string> variables,
         BoolValueExpression *application_expression,
         ValueExpression *sum_field,
-        double constraint_value
+        double constraint_value,
+        Logger *logger
     ) :
         _variables(variables),
         _application_expression(application_expression),
         _sum_field(sum_field),
-        _constraint_value(constraint_value)
+        _constraint_value(constraint_value),
+        _logger(logger)
     {
 
     }
@@ -217,7 +232,7 @@ namespace Synopsis {
                         if (value.is_numeric()) {
                             aggregate += value.get_numeric();
                         } else {
-                            // TODO: Log error, value not aggregated
+                            LOG(this->_logger, Synopsis::LogType::ERROR,  "Non-numeric value prevented aggregation while applying constraint");
                         }
                     } else {
                         aggregate += 1;
@@ -241,23 +256,8 @@ namespace Synopsis {
         _constraint_map({}),
         _default_rules({}),
         _default_constraints({}),
-        _expressions({})
-    {
-
-    }
-
-
-    RuleSet::RuleSet(
-        std::map<int, RuleList> rule_map,
-        std::map<int, ConstraintList> constraint_map,
-        RuleList default_rules,
-        ConstraintList default_constraints
-    ) :
-        _rule_map(rule_map),
-        _constraint_map(constraint_map),
-        _default_rules(default_rules),
-        _default_constraints(default_constraints),
-        _expressions({})
+        _expressions({}),
+        _logger(nullptr)
     {
 
     }
@@ -268,13 +268,32 @@ namespace Synopsis {
         std::map<int, ConstraintList> constraint_map,
         RuleList default_rules,
         ConstraintList default_constraints,
-        std::vector<std::shared_ptr<RuleExpression>> expressions
+        Logger *logger
     ) :
         _rule_map(rule_map),
         _constraint_map(constraint_map),
         _default_rules(default_rules),
         _default_constraints(default_constraints),
-        _expressions(expressions)
+        _logger(logger)
+    {
+
+    }
+
+
+    RuleSet::RuleSet(
+        std::map<int, RuleList> rule_map,
+        std::map<int, ConstraintList> constraint_map,
+        RuleList default_rules,
+        ConstraintList default_constraints,
+        std::vector<std::shared_ptr<RuleExpression>> expressions,
+        Logger *logger
+    ) :
+        _rule_map(rule_map),
+        _constraint_map(constraint_map),
+        _default_rules(default_rules),
+        _default_constraints(default_constraints),
+        _expressions(expressions),
+        _logger(logger)
     {
 
     }
@@ -306,9 +325,15 @@ namespace Synopsis {
         // Check constraints
         ConstraintList constraints = this->get_constraints(bin);
         bool violated = false;
-        for (auto &constraint : constraints) {
+        unsigned int num_constraints = constraints.size();
+        // for (auto &constraint : constraints) {
+        for(unsigned int i = 0; i < num_constraints; i++){
+            Constraint constraint = constraints[i];
             if (!constraint.apply(queue)) {
                 violated = true;
+                //TODO: create a printable string representation of constraitns and call that here to report which constraint is violated instead logging of loop index
+                LOG(this->_logger, Synopsis::LogType::INFO,   "Violated constraint index: %ld ", i); 
+                
                 break;
             }
         }
@@ -411,7 +436,8 @@ namespace Synopsis {
                 return this->_right_expr->get_value(assignments, asdps);
             }
         } else {
-            // TODO: Log error
+            LOG(this->_logger, Synopsis::LogType::ERROR,  "invalid operator %s in binary logical expression", this->_op.c_str());
+
             return false;
         }
     }
@@ -437,7 +463,12 @@ namespace Synopsis {
         DpMetadataValue left_value = this->_left_expr->get_value(assignments, asdps);
         DpMetadataValue right_value = this->_right_expr->get_value(assignments, asdps);
         if (left_value.is_numeric() ^ right_value.is_numeric()) {
-            // TODO: Log error (type mis-match)
+            if (left_value.is_numeric()){
+                LOG(this->_logger, Synopsis::LogType::ERROR, "type mismatch in ComparatorExpression::get_value, only left value is numeric");
+            }else{
+                LOG(this->_logger, Synopsis::LogType::ERROR,  "type mismatch in ComparatorExpression::get_value, only right value is numeric");
+            }
+            
             return false;
         }
         if (left_value.is_numeric()) {
@@ -456,7 +487,7 @@ namespace Synopsis {
             } else if (this->_comp == "<=") {
                 return (left_value_dbl <= right_value_dbl);
             } else {
-                // TODO: Log error (unknown string comparision)
+                LOG(this->_logger, Synopsis::LogType::ERROR, "unknown string comparison %s in ComparatorExpression::get_value", this->_comp.c_str());
                 return false;
             }
         } else {
@@ -467,7 +498,7 @@ namespace Synopsis {
             } else if (this->_comp == "!=") {
                 return (left_value_str != right_value_str);
             } else {
-                // TODO: Log error (unknown string comparision)
+                LOG(this->_logger, Synopsis::LogType::ERROR, "unknown string comparision %s in ComparatorExpression::get_value", this->_comp.c_str());
                 return false;
             }
         }
@@ -502,7 +533,7 @@ namespace Synopsis {
         if (value.is_numeric()) {
             return DpMetadataValue(-value.get_numeric());
         } else {
-            // TODO: Warn not a number
+            LOG(this->_logger, Synopsis::LogType::WARN, "Not a number in MinusExpression::get_value");
             return DpMetadataValue(std::numeric_limits<double>::quiet_NaN());
         }
     }
@@ -537,11 +568,17 @@ namespace Synopsis {
             } else if (this->_op == "-") {
                 return DpMetadataValue(left_value_dbl - right_value_dbl);
             } else {
-                // TODO: Warn operator not supported
+                LOG(this->_logger, Synopsis::LogType::WARN, "Operator %s not supported in BinaryExpression::get_value", this->_op.c_str());
                 return DpMetadataValue(std::numeric_limits<double>::quiet_NaN());
             }
         } else {
-            // TODO: Warn not a number
+            if (left_value.is_numeric()){
+                LOG(this->_logger, Synopsis::LogType::WARN, "Right value not numeric in BinaryExpression::get_value");
+
+            } else {
+                LOG(this->_logger, Synopsis::LogType::WARN,  "Left value not numeric in BinaryExpression::get_value");
+            }
+            
             return DpMetadataValue(std::numeric_limits<double>::quiet_NaN());
         }
     }
@@ -611,15 +648,17 @@ namespace Synopsis {
 
 
     Status _get_argument_obj(
-        nlohmann::json *result, nlohmann::json &j_obj, std::string arg
+        nlohmann::json *result, nlohmann::json &j_obj, std::string arg, Logger *logger
     ) {
         if (!j_obj.is_object()) {
+            LOG(logger, Synopsis::LogType::ERROR, "Expected (key, value) pair in _get_argument_obj for arg: %s , but got: %s", arg.c_str(), j_obj.dump().c_str()); 
             return FAILURE;
         }
 
         // TODO: Check for key
         auto j_contents = j_obj["__contents__"];
         if (!j_contents.is_object()) {
+            LOG(logger, Synopsis::LogType::ERROR, "Expected value of __contents__ key of %s to be (key, value) pair in _get_argument_obj", j_obj.dump().c_str());
             return FAILURE;
         }
 
@@ -629,29 +668,31 @@ namespace Synopsis {
     }
 
 
-    std::string _get_obj_type(nlohmann::json &j_obj, Status& status) {
+    std::string _get_obj_type(nlohmann::json &j_obj, Status& status, Logger *logger) {
         status = FAILURE;
         if (!j_obj.is_object()) {
-            // TODO: log invalid object
+            LOG(logger, Synopsis::LogType::ERROR, "Expected (key, value) pair in _get_obj_type but got: %s", j_obj.dump().c_str()); 
             return "";
         }
         auto j_type = j_obj["__type__"];
         if (!j_type.is_string()) {
-            // TODO: log invalid type
+            LOG(logger, Synopsis::LogType::ERROR, "Expected value of __type__ key of %s to be a string in _get_obj_type, status:  %ld", j_obj.dump().c_str(), status);
             return "";
         }
         status = SUCCESS;
         return j_type.get<std::string>();
     }
 
+
     template<> std::vector<std::string> _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
         std::vector<std::string> bad = {};
         nlohmann::json j_arg;
-        status = _get_argument_obj(&j_arg, j_obj, arg);
+        status = _get_argument_obj(&j_arg, j_obj, arg, logger);
         if (status != SUCCESS) { return bad; }
 
         if (j_arg.is_array()) {
@@ -673,11 +714,12 @@ namespace Synopsis {
     template<> std::string _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
         std::string bad = "";
         nlohmann::json j_arg;
-        status = _get_argument_obj(&j_arg, j_obj, arg);
+        status = _get_argument_obj(&j_arg, j_obj, arg, logger);
         if (status != SUCCESS) { return bad; }
 
         if (j_arg.is_string()) {
@@ -693,19 +735,20 @@ namespace Synopsis {
     template<> int _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
         int bad = -1;
         nlohmann::json j_arg;
-        status = _get_argument_obj(&j_arg, j_obj, arg);
+        status = _get_argument_obj(&j_arg, j_obj, arg, logger);
         if (status != SUCCESS) { return bad; }
 
         if (j_arg.is_number_integer()) {
             status = SUCCESS;
             return j_arg.get<int>();
         } else {
-            // TODO: log error
             status = FAILURE;
+            LOG(logger, Synopsis::LogType::ERROR, "argument is not an integer in _parse_argument, status:  %ld", status);
             return bad;
         }
 
@@ -715,19 +758,20 @@ namespace Synopsis {
     template<> double _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
         double bad = 0.0;
         nlohmann::json j_arg;
-        status = _get_argument_obj(&j_arg, j_obj, arg);
+        status = _get_argument_obj(&j_arg, j_obj, arg, logger);
         if (status != SUCCESS) { return bad; }
 
         if (j_arg.is_number()) {
             status = SUCCESS;
             return j_arg.get<double>();
         } else {
-            // TODO: log error
             status = FAILURE;
+            LOG(logger, Synopsis::LogType::ERROR, "argument is not a double in _parse_argument, status:  %ld", status);
             return bad;
         }
 
@@ -737,19 +781,20 @@ namespace Synopsis {
     template<> bool _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
         bool bad = false;
         nlohmann::json j_arg;
-        status = _get_argument_obj(&j_arg, j_obj, arg);
+        status = _get_argument_obj(&j_arg, j_obj, arg, logger);
         if (status != SUCCESS) { return bad; }
 
         if (j_arg.is_boolean()) {
             status = SUCCESS;
             return j_arg.get<bool>();
         } else {
-            // TODO: log error
             status = FAILURE;
+            LOG(logger, Synopsis::LogType::ERROR, "argument is not a boolean in _parse_argument, status:  %ld", status);
             return bad;
         }
 
@@ -759,11 +804,12 @@ namespace Synopsis {
     template<> ValueExpression* _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
         ValueExpression* bad = nullptr;
         nlohmann::json j_arg;
-        status = _get_argument_obj(&j_arg, j_obj, arg);
+        status = _get_argument_obj(&j_arg, j_obj, arg, logger);
         if (status != SUCCESS) { return bad; }
 
         // Allow null entries for expressions to support `sum_field`
@@ -772,13 +818,13 @@ namespace Synopsis {
             return nullptr;
         }
 
-        std::string type = _get_obj_type(j_arg, status);
+        std::string type = _get_obj_type(j_arg, status, logger);
         if (status != SUCCESS) { return bad; }
 
         std::shared_ptr<ValueExpression> ptr;
 
         if (type == "ConstExpression") {
-            double value = _parse_argument<double>(j_arg, "value", exprs, status);
+            double value = _parse_argument<double>(j_arg, "value", exprs, status, logger);
             if (status != SUCCESS) {
                 status = FAILURE;
                 return bad;
@@ -789,7 +835,7 @@ namespace Synopsis {
 
         } else if (type == "StringConstant") {
             std::string value = _parse_argument<std::string>(
-                j_arg, "value", exprs, status
+                j_arg, "value", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -801,7 +847,7 @@ namespace Synopsis {
 
         } else if (type == "MinusExpression") {
             ValueExpression *expr = _parse_argument<ValueExpression*>(
-                j_arg, "expression", exprs, status
+                j_arg, "expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -813,7 +859,7 @@ namespace Synopsis {
 
         } else if (type == "BinaryExpression") {
             std::string op = _parse_argument<std::string>(
-                j_arg, "operator", exprs, status
+                j_arg, "operator", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -821,7 +867,7 @@ namespace Synopsis {
             }
 
             ValueExpression *left_expr = _parse_argument<ValueExpression*>(
-                j_arg, "left_expression", exprs, status
+                j_arg, "left_expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -829,7 +875,7 @@ namespace Synopsis {
             }
 
             ValueExpression *right_expr = _parse_argument<ValueExpression*>(
-                j_arg, "right_expression", exprs, status
+                j_arg, "right_expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -842,7 +888,7 @@ namespace Synopsis {
 
         } else if (type == "Field") {
             std::string var_name = _parse_argument<std::string>(
-                j_arg, "variable_name", exprs, status
+                j_arg, "variable_name", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -850,7 +896,7 @@ namespace Synopsis {
             }
 
             std::string field_name = _parse_argument<std::string>(
-                j_arg, "field_name", exprs, status
+                j_arg, "field_name", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -869,6 +915,7 @@ namespace Synopsis {
 
         status = SUCCESS;
         exprs.push_back(ptr);
+        ptr->set_logger(logger);
         return ptr.get();
     }
 
@@ -876,20 +923,21 @@ namespace Synopsis {
     template<> BoolValueExpression* _parse_argument(
         nlohmann::json &j_obj, std::string arg,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status, 
+        Logger *logger
     ) {
         BoolValueExpression* bad = nullptr;
         nlohmann::json j_arg;
-        status = _get_argument_obj(&j_arg, j_obj, arg);
+        status = _get_argument_obj(&j_arg, j_obj, arg, logger);
         if (status != SUCCESS) { return bad; }
 
-        std::string type = _get_obj_type(j_arg, status);
+        std::string type = _get_obj_type(j_arg, status, logger);
         if (status != SUCCESS) { return bad; }
 
         std::shared_ptr<BoolValueExpression> ptr;
 
         if (type == "LogicalConstant") {
-            bool value = _parse_argument<bool>(j_arg, "value", exprs, status);
+            bool value = _parse_argument<bool>(j_arg, "value", exprs, status, logger);
             if (status != SUCCESS) {
                 status = FAILURE;
                 return bad;
@@ -901,7 +949,7 @@ namespace Synopsis {
 
         } else if (type == "LogicalNot") {
             BoolValueExpression *expr = _parse_argument<BoolValueExpression*>(
-                j_arg, "expression", exprs, status
+                j_arg, "expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -914,7 +962,7 @@ namespace Synopsis {
 
         } else if (type == "BinaryLogicalExpression") {
             std::string op = _parse_argument<std::string>(
-                j_arg, "operator", exprs, status
+                j_arg, "operator", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -922,7 +970,7 @@ namespace Synopsis {
             }
 
             BoolValueExpression *left_expr = _parse_argument<BoolValueExpression*>(
-                j_arg, "left_expression", exprs, status
+                j_arg, "left_expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -930,7 +978,7 @@ namespace Synopsis {
             }
 
             BoolValueExpression *right_expr = _parse_argument<BoolValueExpression*>(
-                j_arg, "right_expression", exprs, status
+                j_arg, "right_expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -943,7 +991,7 @@ namespace Synopsis {
 
         } else if (type == "ComparatorExpression") {
             std::string comp = _parse_argument<std::string>(
-                j_arg, "comparator", exprs, status
+                j_arg, "comparator", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -951,7 +999,7 @@ namespace Synopsis {
             }
 
             ValueExpression *left_expr = _parse_argument<ValueExpression*>(
-                j_arg, "left_expression", exprs, status
+                j_arg, "left_expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -959,7 +1007,7 @@ namespace Synopsis {
             }
 
             ValueExpression *right_expr = _parse_argument<ValueExpression*>(
-                j_arg, "right_expression", exprs, status
+                j_arg, "right_expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -972,7 +1020,7 @@ namespace Synopsis {
 
         } else if (type == "ExistentialExpression") {
             std::string variable = _parse_argument<std::string>(
-                j_arg, "variable", exprs, status
+                j_arg, "variable", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -980,7 +1028,7 @@ namespace Synopsis {
             }
 
             BoolValueExpression *expr = _parse_argument<BoolValueExpression*>(
-                j_arg, "expression", exprs, status
+                j_arg, "expression", exprs, status, logger
             );
             if (status != SUCCESS) {
                 status = FAILURE;
@@ -999,6 +1047,7 @@ namespace Synopsis {
 
         status = SUCCESS;
         exprs.push_back(ptr);
+        ptr->set_logger(logger);
         return ptr.get();
     }
 
@@ -1006,56 +1055,57 @@ namespace Synopsis {
     Constraint _parse_constraint(
         nlohmann::json &j_constraint,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
-        Constraint bad = Constraint({}, nullptr, nullptr, 0.0);
+        Constraint bad = Constraint({}, nullptr, nullptr, 0.0, logger);
 
-        std::string type = _get_obj_type(j_constraint, status);
+        std::string type = _get_obj_type(j_constraint, status, logger);
         if (status != SUCCESS || type != "Constraint") {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "Expected Constraint type, but encountered %s type while parsing constraint, status:  %ld", type.c_str(), status);
             status = FAILURE;
             return bad;
         }
 
         auto variables = _parse_argument<std::vector<std::string>>(
-            j_constraint, "variables", exprs, status
+            j_constraint, "variables", exprs, status, logger
         );
         if (status != SUCCESS) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "while parsing string argument in _parse_constraint, status:  %ld", status);
             status = FAILURE;
             return bad;
         }
 
         auto application = _parse_argument<BoolValueExpression*>(
-            j_constraint, "application", exprs, status
+            j_constraint, "application", exprs, status, logger
         );
         if (status != SUCCESS) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "while parsing boolean argument in _parse_constraint, status:  %ld", status);
             status = FAILURE;
             return bad;
         }
 
         auto sum_field = _parse_argument<ValueExpression*>(
-            j_constraint, "sum_field", exprs, status
+            j_constraint, "sum_field", exprs, status, logger
         );
         if (status != SUCCESS) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "while parsing value argument in _parse_constraint, status:  %ld", status);
             status = FAILURE;
             return bad;
         }
 
-        auto constraint_value = _parse_argument<double>(
-            j_constraint, "constraint_value", exprs, status
+        auto constraint_value = _parse_argument<double>( 
+            j_constraint, "constraint_value", exprs, status, logger
         );
         if (status != SUCCESS) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "while parsing double argument in _parse_constraint, status:  %ld", status);
             status = FAILURE;
             return bad;
         }
 
         status = SUCCESS;
         return Constraint(
-            variables, application, sum_field, constraint_value
+            variables, application, sum_field, constraint_value, logger
         );
 
     }
@@ -1064,55 +1114,57 @@ namespace Synopsis {
     Rule _parse_rule(
         nlohmann::json &j_rule,
         std::vector<std::shared_ptr<RuleExpression>> &exprs,
-        Status& status
+        Status& status,
+        Logger *logger
     ) {
-        Rule bad = Rule({}, nullptr, nullptr, 0);
+        Rule bad = Rule({}, nullptr, nullptr, 0, logger);
 
-        std::string type = _get_obj_type(j_rule, status);
+        std::string type = _get_obj_type(j_rule, status, logger);
         if (status != SUCCESS || type != "Rule") {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "Expected Rule type, but encountered %s type while parsing rule, status:  %ld", type.c_str(), status);
             status = FAILURE;
             return bad;
         }
 
         auto variables = _parse_argument<std::vector<std::string>>(
-            j_rule, "variables", exprs, status
+            j_rule, "variables", exprs, status, logger
         );
         if (status != SUCCESS) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "while parsing string argument in _parse_rule, status:  %ld", status);
             status = FAILURE;
             return bad;
         }
 
         auto application = _parse_argument<BoolValueExpression*>(
-            j_rule, "application", exprs, status
+            j_rule, "application", exprs, status, logger
         );
         if (status != SUCCESS) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "while parsing boolean argument in _parse_rule, status:  %ld", status);
             status = FAILURE;
             return bad;
         }
 
         auto adjustment = _parse_argument<ValueExpression*>(
-            j_rule, "adjustment", exprs, status
+            j_rule, "adjustment", exprs, status, logger
         );
         if (status != SUCCESS) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "while parsing value argument in _parse_rule, status:  %ld", status);
             status = FAILURE;
             return bad;
         }
 
         auto max_applications = _parse_argument<int>(
-            j_rule, "max_applications", exprs, status
+            j_rule, "max_applications", exprs, status, logger
         );
         if (status != SUCCESS) {
+            LOG(logger, Synopsis::LogType::WARN, "while parsing integer argument in _parse_rule, status:  %ld", status);
             // If there is no max_applications specified, use -1
             max_applications = -1;
         }
 
         status = SUCCESS;
         return Rule(
-            variables, application, adjustment, max_applications
+            variables, application, adjustment, max_applications, logger
         );
 
     }
@@ -1121,7 +1173,8 @@ namespace Synopsis {
     std::pair<RuleList, ConstraintList>
     _parse_bin(
             nlohmann::json &j_bin,
-            std::vector<std::shared_ptr<RuleExpression>> &exprs
+            std::vector<std::shared_ptr<RuleExpression>> &exprs,
+            Logger *logger
     ) {
         Status status = SUCCESS;
         RuleList rules;
@@ -1131,11 +1184,11 @@ namespace Synopsis {
         auto j_rules = j_bin["rules"];
         if (j_rules.is_array()) {
             for (auto j_rule : j_rules) {
-                Rule rule = _parse_rule(j_rule, exprs, status);
+                Rule rule = _parse_rule(j_rule, exprs, status, logger);
                 if (status == SUCCESS) {
                     rules.push_back(rule);
                 } else {
-                    // TODO: log error
+                    LOG(logger, Synopsis::LogType::ERROR, "error while parsing rule in parse_bin, status:  %ld, rule: %s", status, j_rule.dump().c_str());
                 }
             }
         }
@@ -1144,11 +1197,11 @@ namespace Synopsis {
         auto j_constraints = j_bin["constraints"];
         if (j_constraints.is_array()) {
             for (auto j_constraint : j_constraints) {
-                Constraint constraint = _parse_constraint(j_constraint, exprs, status);
+                Constraint constraint = _parse_constraint(j_constraint, exprs, status, logger);
                 if (status == SUCCESS) {
                     constraints.push_back(constraint);
                 } else {
-                    // TODO: log error
+                    LOG(logger, Synopsis::LogType::ERROR, "error while parsing constraint in parse_bin, status:  %ld", status);
                 }
             }
         }
@@ -1157,8 +1210,7 @@ namespace Synopsis {
     }
 
 
-    RuleSet parse_rule_config(std::string config_file) {
-
+    RuleSet parse_rule_config(std::string config_file, Logger *logger) {
         // If no config file provided, return default configuration
         if (config_file.size() == 0) {
             return RuleSet();
@@ -1168,7 +1220,7 @@ namespace Synopsis {
         auto j = nlohmann::json::parse(file_input);
 
         if (!j.is_object()) {
-            // TODO: log warning
+            LOG(logger, Synopsis::LogType::WARN, "JSON parse result is not an object in parse_rule_config");
             return RuleSet();
         }
 
@@ -1182,7 +1234,7 @@ namespace Synopsis {
             std::string key = el.key();
             auto val = el.value();
 
-            auto bin_rules = _parse_bin(val, exprs);
+            auto bin_rules = _parse_bin(val, exprs, logger);
 
             if (key == "default") {
                 default_rules = bin_rules.first;
@@ -1193,7 +1245,7 @@ namespace Synopsis {
                     rule_map[ikey] = bin_rules.first;
                     constraint_map[ikey] = bin_rules.second;
                 } catch ( std::invalid_argument & e ) {
-                    // TODO: log bad alpha key type
+                    LOG(logger, Synopsis::LogType::ERROR,  "Bad alpha key type in parse_rule_config"); // log bad alpha key type
                     continue;
                 }
             }
@@ -1202,7 +1254,7 @@ namespace Synopsis {
         return RuleSet(
             rule_map, constraint_map,
             default_rules, default_constraints,
-            exprs
+            exprs, logger
         );
     }
 

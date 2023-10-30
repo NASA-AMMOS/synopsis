@@ -187,8 +187,8 @@ namespace Synopsis {
                     ASDS *asds = std::get<2>(this->asds[i]);
                     status_i = asds->process_data_product(msg);
                     if (status_i != SUCCESS) {
-                        // TODO: log status?
                         status = status_i;
+                        LOG(this->_logger, Synopsis::LogType::ERROR, "ASDS processing failed with status: %ld", status);
                     }
 
                 }
