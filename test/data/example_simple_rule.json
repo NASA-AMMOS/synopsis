@@ -1,0 +1,29 @@
+{
+  "default": {
+    "rules": [
+      {
+        "__type__": "Rule",
+        "__contents__": {
+          "variables": [
+            "x"
+          ],
+          "application": {
+            "__type__": "LogicalConstant",
+            "__contents__": {
+              "value": true
+            }
+          },
+          "adjustment": {
+            "__type__": "ConstExpression",
+            "__contents__": {
+              "__type__": "ConstExpression",
+              "value": 1.0
+            }
+          },
+          "max_applications": null
+        }
+      }
+    ],
+    "constraints": []
+  }
+}

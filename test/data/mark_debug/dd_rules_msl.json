@@ -1,0 +1,162 @@
+{
+  "default": {
+    "rules": [
+      {
+        "__type__": "Rule",
+        "__contents__": {
+          "variables": [
+            "x"
+          ],
+          "application": {
+            "__type__": "BinaryLogicalExpression",
+            "__contents__": {
+              "operator": "AND",
+              "left_expression": {
+                "__type__": "BinaryLogicalExpression",
+                "__contents__": {
+                  "operator": "AND",
+                  "left_expression": {
+                    "__type__": "ComparatorExpression",
+                    "__contents__": {
+                      "comparator": "==",
+                      "left_expression": {
+                        "__type__": "Field",
+                        "__contents__": {
+                          "variable_name": "x",
+                          "field_name": "instrument"
+                        }
+                      },
+                      "right_expression": {
+                        "__type__": "StringConstant",
+                        "__contents__": {
+                          "value": "CHEMISTRY CAMERA REMOTE MICRO-IMAGER"
+                        }
+                      }
+                    }
+                  },
+                  "right_expression": {
+                    "__type__": "ComparatorExpression",
+                    "__contents__": {
+                      "comparator": "==",
+                      "left_expression": {
+                        "__type__": "Field",
+                        "__contents__": {
+                          "variable_name": "x",
+                          "field_name": "type"
+                        }
+                      },
+                      "right_expression": {
+                        "__type__": "StringConstant",
+                        "__contents__": {
+                          "value": "MASTCAM"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "right_expression": {
+                "__type__": "ExistentialExpression",
+                "__contents__": {
+                  "variable": "y",
+                  "expression": {
+                    "__type__": "BinaryLogicalExpression",
+                    "__contents__": {
+                      "operator": "AND",
+                      "left_expression": {
+                        "__type__": "BinaryLogicalExpression",
+                        "__contents__": {
+                          "operator": "AND",
+                          "left_expression": {
+                            "__type__": "ComparatorExpression",
+                            "__contents__": {
+                              "comparator": "==",
+                              "left_expression": {
+                                "__type__": "Field",
+                                "__contents__": {
+                                  "variable_name": "y",
+                                  "field_name": "instrument"
+                                }
+                              },
+                              "right_expression": {
+                                "__type__": "StringConstant",
+                                "__contents__": {
+                                  "value": "CHEMCAM_LIBS"
+                                }
+                              }
+                            }
+                          },
+                          "right_expression": {
+                            "__type__": "ComparatorExpression",
+                            "__contents__": {
+                              "comparator": "==",
+                              "left_expression": {
+                                "__type__": "Field",
+                                "__contents__": {
+                                  "variable_name": "y",
+                                  "field_name": "type"
+                                }
+                              },
+                              "right_expression": {
+                                "__type__": "StringConstant",
+                                "__contents__": {
+                                  "value": "SPECTROMETER"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "right_expression": {
+                        "__type__": "ComparatorExpression",
+                        "__contents__": {
+                          "comparator": "==",
+                          "left_expression": {
+                            "__type__": "Field",
+                            "__contents__": {
+                              "variable_name": "x",
+                              "field_name": "target"
+                            }
+                          },
+                          "right_expression": {
+                            "__type__": "Field",
+                            "__contents__": {
+                              "variable_name": "y",
+                              "field_name": "target"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "adjustment": {
+            "__type__": "BinaryExpression",
+            "__contents__": {
+              "operator": "*",
+              "left_expression": {
+                "__type__": "ConstExpression",
+                "__contents__": {
+                  "__type__": "ConstExpression",
+                  "value": 2.0
+                }
+              },
+              "right_expression": {
+                "__type__": "Field",
+                "__contents__": {
+                  "variable_name": "x",
+                  "field_name": "final_science_utility_estimate"
+                }
+              }
+            }
+          },
+          "max_applications": 1
+        }
+      }
+    ],
+    "constraints": []
+  }
+}

@@ -355,6 +355,235 @@ TEST(SynopsisTest, TestApplicationASDPDBInterfaces) {
 }
 
 
+// Test empty ASDS meta data in JSON file
+TEST(SynopsisTest, TestEmptyMetaData) {
+
+    // Construct DP message for test data
+    std::string data_path = get_absolute_data_path("example_dp.dat");
+    std::string metadata_path = get_absolute_data_path("example_metadata_empty_md.json");
+
+    Synopsis::DpMsg msg(
+        "test_instrument", "test_type",
+        data_path,
+        metadata_path,
+        true  // TODO: a false here would trigger the msg.get_metadata_usage if statement to fail
+    );
+
+    // Test initialization
+    Synopsis::SqliteASDPDB db(":memory:");
+    Synopsis::StdLogger logger;
+    Synopsis::LinuxClock clock;
+    Synopsis::MaxMarginalRelevanceDownlinkPlanner planner;
+
+    Synopsis::Application app(&db, &planner, &logger, &clock);
+    Synopsis::Status status;
+
+    Synopsis::PassthroughASDS pt_asds;
+    status = app.add_asds("test_instrument", "test_type", &pt_asds);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = pt_asds.process_data_product(msg);
+    EXPECT_EQ(Synopsis::Status::FAILURE, status);
+
+    size_t mem_req;
+    mem_req = app.memory_requirement();
+    EXPECT_EQ(0, mem_req);
+
+    status = app.init(0, NULL);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = app.accept_dp(msg);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    // Check DB entry
+    std::vector<int> asdp_ids;
+    int asdp_id;
+
+    // Get ID of inserted ASDP
+    asdp_ids = db.list_data_product_ids();
+    EXPECT_EQ(asdp_ids.size(), 1);
+    asdp_id = asdp_ids[0];
+
+    // Get inserted ASDP
+    Synopsis::DpDbMsg db_msg;
+    status = db.get_data_product(asdp_id, db_msg);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    // Check ASDP values
+    EXPECT_EQ("test_instrument", db_msg.get_instrument_name());
+    EXPECT_EQ("test_type", db_msg.get_type());
+    EXPECT_EQ(data_path, db_msg.get_uri());
+    // EXPECT_EQ(53, db_msg.get_dp_size());
+    EXPECT_EQ(0.123, db_msg.get_science_utility_estimate());
+    EXPECT_EQ(7, db_msg.get_priority_bin());
+    EXPECT_EQ(Synopsis::DownlinkState::UNTRANSMITTED, db_msg.get_downlink_state());
+
+    auto meta = db_msg.get_metadata();
+    EXPECT_EQ(0, meta.size());
+
+    status = app.deinit();
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+}
+
+
+// Test bad ASDS meta data in JSON file
+TEST(SynopsisTest, TestBadMetaData) {
+
+    // Construct DP message for test data
+    std::string data_path = get_absolute_data_path("example_dp.dat");
+    std::string metadata_path = get_absolute_data_path("example_metadata_bad_md.json");
+
+    Synopsis::DpMsg msg(
+        "test_instrument", "test_type",
+        data_path,
+        metadata_path,
+        true  // TODO: a false here would trigger the msg.get_metadata_usage if statement to fail
+    );
+
+    // Test initialization
+    Synopsis::SqliteASDPDB db(":memory:");
+    Synopsis::StdLogger logger;
+    Synopsis::LinuxClock clock;
+    Synopsis::MaxMarginalRelevanceDownlinkPlanner planner;
+
+    Synopsis::Application app(&db, &planner, &logger, &clock);
+    Synopsis::Status status;
+
+    Synopsis::PassthroughASDS pt_asds;
+    status = app.add_asds("test_instrument", "test_type", &pt_asds);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = pt_asds.process_data_product(msg);
+    EXPECT_EQ(Synopsis::Status::FAILURE, status);
+
+    size_t mem_req;
+    mem_req = app.memory_requirement();
+    EXPECT_EQ(0, mem_req);
+
+    status = app.init(0, NULL);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = app.accept_dp(msg);
+    EXPECT_EQ(Synopsis::Status::FAILURE, status);
+
+    // Check DB entry
+    std::vector<int> asdp_ids;
+    int asdp_id;
+
+    // Get ID of inserted ASDP
+    asdp_ids = db.list_data_product_ids();
+    EXPECT_EQ(asdp_ids.size(), 0);
+
+    status = app.deinit();
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+}
+
+// Test bad ASDS SUE value in JSON file
+TEST(SynopsisTest, TestBadSUE) {
+
+    // Construct DP message for test data
+    std::string data_path = get_absolute_data_path("example_dp.dat");
+    std::string metadata_path = get_absolute_data_path("example_metadata_bad_sue.json");
+
+    Synopsis::DpMsg msg(
+        "test_instrument", "test_type",
+        data_path,
+        metadata_path,
+        true  // TODO: a false here would trigger the msg.get_metadata_usage if statement to fail
+    );
+
+    // Test initialization
+    Synopsis::SqliteASDPDB db(":memory:");
+    Synopsis::StdLogger logger;
+    Synopsis::LinuxClock clock;
+    Synopsis::MaxMarginalRelevanceDownlinkPlanner planner;
+
+    Synopsis::Application app(&db, &planner, &logger, &clock);
+    Synopsis::Status status;
+
+    Synopsis::PassthroughASDS pt_asds;
+    status = app.add_asds("test_instrument", "test_type", &pt_asds);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = pt_asds.process_data_product(msg);
+    EXPECT_EQ(Synopsis::Status::FAILURE, status);
+
+    size_t mem_req;
+    mem_req = app.memory_requirement();
+    EXPECT_EQ(0, mem_req);
+
+    status = app.init(0, NULL);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = app.accept_dp(msg);
+    EXPECT_EQ(Synopsis::Status::FAILURE, status);
+
+    // Check DB entry
+    std::vector<int> asdp_ids;
+    int asdp_id;
+
+    // Get ID of inserted ASDP
+    asdp_ids = db.list_data_product_ids();
+    EXPECT_EQ(asdp_ids.size(), 0);
+
+    status = app.deinit();
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+}
+
+
+// Test bad ASDS SUE value in JSON file
+TEST(SynopsisTest, TestBadPriorityBin) {
+
+    // Construct DP message for test data
+    std::string data_path = get_absolute_data_path("example_dp.dat");
+    std::string metadata_path = get_absolute_data_path("example_metadata_bad_pb.json");
+
+    Synopsis::DpMsg msg(
+        "test_instrument", "test_type",
+        data_path,
+        metadata_path,
+        true  // TODO: a false here would trigger the msg.get_metadata_usage if statement to fail
+    );
+
+    // Test initialization
+    Synopsis::SqliteASDPDB db(":memory:");
+    Synopsis::StdLogger logger;
+    Synopsis::LinuxClock clock;
+    Synopsis::MaxMarginalRelevanceDownlinkPlanner planner;
+
+    Synopsis::Application app(&db, &planner, &logger, &clock);
+    Synopsis::Status status;
+
+    Synopsis::PassthroughASDS pt_asds;
+    status = app.add_asds("test_instrument", "test_type", &pt_asds);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = pt_asds.process_data_product(msg);
+    EXPECT_EQ(Synopsis::Status::FAILURE, status);
+
+    size_t mem_req;
+    mem_req = app.memory_requirement();
+    EXPECT_EQ(0, mem_req);
+
+    status = app.init(0, NULL);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    status = app.accept_dp(msg);
+    EXPECT_EQ(Synopsis::Status::FAILURE, status);
+
+    // Check DB entry
+    std::vector<int> asdp_ids;
+    int asdp_id;
+
+    // Get ID of inserted ASDP
+    asdp_ids = db.list_data_product_ids();
+    EXPECT_EQ(asdp_ids.size(), 0);
+
+    status = app.deinit();
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+}
+
+
 // Test pass-through ASDS
 TEST(SynopsisTest, TestPassThroughASDS) {
 
@@ -431,12 +660,16 @@ TEST(SynopsisTest, TestPassThroughASDS) {
     EXPECT_EQ(Synopsis::Status::SUCCESS, status);
 }
 
+
 TEST(SynopsisTest, TestStdLogger) {
 
-    Synopsis::StdLogger logger;
-    logger.log(Synopsis::LogType::INFO, "Test log info: %ld", 5);
-    logger.log(Synopsis::LogType::WARN, "Test log warn: %ld", 5);
-    logger.log(Synopsis::LogType::ERROR, "Test log error: %ld", 5);
+    Synopsis::StdLogger logger, *logger_ptr;
+    logger_ptr = &logger;
+    LOG(logger_ptr, Synopsis::LogType::INFO, "Test log info: %ld", 5);
+    LOG(logger_ptr, Synopsis::LogType::WARN, "Test log warn: %ld", 5);
+    LOG(logger_ptr, Synopsis::LogType::ERROR, "Test log error: %ld", 5);
+
+    // TODO: try capturing stdout/stderr streams and checking if the text is as expected
 }
 
 TEST(SynopsisTest, TestLinuxClock) {
@@ -457,6 +690,130 @@ TEST(SynopsisTest, TestLinuxClock) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TEST(SynopsisTest, TestExpressionsManually){
+    Synopsis::RuleSet rs;
+
+    Synopsis::StdLogger logger;
+    std::map<int, Synopsis::RuleList> rule_map;
+    std::map<int, Synopsis::ConstraintList> constraint_map;
+    Synopsis::RuleList default_rules;
+    Synopsis::ConstraintList default_constraints;
+
+    Synopsis::RuleSet rs2(
+                rule_map,
+                constraint_map,
+                default_rules,
+                default_constraints,
+                &logger);
+
+    // Synopsis::RuleSet rs(std::map<int, Synopsis::RuleList> rule_map, std::map<int, Synopsis::ConstraintList> constraint_map, Synopsis::RuleList default_rules, Synopsis::ConstraintList default_constraints, Synopsis::Logger *logger)
+    // Synopsis::Status status;
+    // status = app.add_asds("test_instrument", "test_type", &pt_asds);
+    // EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+}
+
+
+
+
+TEST(SynopsisTest, TestBadRules) {
+    std::string db_path = get_absolute_data_path("dd_example.db");
+    std::string dd_config_path = get_absolute_data_path("dd_example_similarity_config.json");
+    std::string dd_rules_path = get_absolute_data_path("example_simple_rule.json");
+
+    // Test initialization
+    Synopsis::SqliteASDPDB db(db_path);
+    Synopsis::StdLogger logger;
+    Synopsis::LinuxClock clock;
+    Synopsis::MaxMarginalRelevanceDownlinkPlanner planner;
+
+    Synopsis::Application app(&db, &planner, &logger, &clock);
+    Synopsis::Status status;
+
+    status = app.init(0, NULL);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+    std::vector<int> prioritized_list;
+    status = app.prioritize(dd_rules_path, dd_config_path, 100, prioritized_list);
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+    EXPECT_EQ(3, prioritized_list.size());
+    EXPECT_EQ(1, prioritized_list[0]);
+    EXPECT_EQ(3, prioritized_list[1]);
+
+    status = app.deinit();
+    EXPECT_EQ(Synopsis::Status::SUCCESS, status);
+
+}
+
+
+
+
+
+// TEST(SynopsisTest, TestRuleASTv2) {
+
+   
+//     Synopsis::LogicalConstant true_expr(true);
+//     // Synopsis::ConstExpression adj_expr(1.0);
+//     Synopsis::ConstExpression adj_expr("notnumeric");
+//     int max_applications = 1;
+//     Synopsis::StdLogger logger;
+
+//     // Test two variable case
+//      std::vector<std::string> variables = {"x"};  // {"x", "y"};
+//     Synopsis::Rule rule(variables, &true_expr, &adj_expr, max_applications, &logger);
+//     std::vector<std::map<std::string, Synopsis::DpMetadataValue>> asdps = {
+//         {
+//             {"asdp_id", Synopsis::DpMetadataValue(1)}
+//         },
+//         {
+//             {"asdp_id", Synopsis::DpMetadataValue(2)}
+//         },
+//     };
+//     EXPECT_EQ(1.0, rule.apply(asdps));
+
+//     // // Test more than two variable case
+//     // std::vector<std::string> variables3 = {"x", "y", "z"};
+//     // Synopsis::Rule rule3(variables3, &true_expr, &adj_expr, max_applications, &logger);
+//     // EXPECT_EQ(0.0, rule3.apply(asdps));
+
+// }
+
 TEST(SynopsisTest, TestRuleAST) {
 
     std::vector<std::string> variables = {"x"};
@@ -470,8 +827,9 @@ TEST(SynopsisTest, TestRuleAST) {
     Synopsis::StringConstant a_str_expr("a");
     Synopsis::StringConstant b_str_expr("b");
     int max_applications = 1;
+    Synopsis::StdLogger logger;
 
-    Synopsis::Rule rule(variables, &true_expr, &adj_expr, max_applications);
+    Synopsis::Rule rule(variables, &true_expr, &adj_expr, max_applications, &logger);
 
     std::vector<std::map<std::string, Synopsis::DpMetadataValue>> asdps = {
         {
@@ -569,16 +927,43 @@ TEST(SynopsisTest, TestRuleAST) {
     EXPECT_FALSE(ex_expr_zero.get_value({}, asdps));
     EXPECT_TRUE(ex_expr_one.get_value({}, asdps));
 
-
-    Synopsis::Constraint constraint_nosum_sat(variables, &ex_cond_expr_zero, NULL, 1.0);
-    Synopsis::Constraint constraint_nosum_unsat(variables, &ex_cond_expr_one, NULL, 1.0);
-    Synopsis::Constraint constraint_sum_sat(variables, &true_expr, &x_id_field, 4.0);
-    Synopsis::Constraint constraint_sum_unsat(variables, &true_expr, &x_id_field, 3.0);
+    Synopsis::Constraint constraint_nosum_sat(variables, &ex_cond_expr_zero, NULL, 1.0, &logger);
+    Synopsis::Constraint constraint_nosum_unsat(variables, &ex_cond_expr_one, NULL, 1.0, &logger);
+    Synopsis::Constraint constraint_sum_sat(variables, &true_expr, &x_id_field, 4.0, &logger);
+    Synopsis::Constraint constraint_sum_unsat(variables, &true_expr, &x_id_field, 3.0, &logger);
 
     EXPECT_TRUE(constraint_sum_sat.apply(asdps));
     EXPECT_FALSE(constraint_sum_unsat.apply(asdps));
 
+    // Test two variable case
+     std::vector<std::string> variables2 = {"x", "y"};
+    Synopsis::Rule rule2(variables2, &true_expr, &adj_expr, max_applications, &logger);
+    EXPECT_EQ(1.0, rule2.apply(asdps));
 
+    // Test more than two variable case
+    std::vector<std::string> variables3 = {"x", "y", "z"};
+    Synopsis::Rule rule3(variables3, &true_expr, &adj_expr, max_applications, &logger);
+    EXPECT_EQ(0.0, rule3.apply(asdps));
+
+
+    // std::map<int, Synopsis::RuleList> rule_map;
+    // std::map<int, Synopsis::ConstraintList> constraint_map;
+    // Synopsis::RuleList default_rules;
+    // Synopsis::ConstraintList default_constraints;
+    // Synopsis::RuleSet rs;
+    // Synopsis::RuleSet rs2(
+    //             rule_map,
+    //             constraint_map,
+    //             default_rules,
+    //             default_constraints,
+    //             &logger);
+
+    // pass string to adj_expr
+    // pass non numeric to value expr
+    // inst empty ruleset
+    // bad input to Synopsis::BinaryLogicalExpression true_and_true_expr("AND", &true_expr, &true_expr);
+    // bad input to Synopsis::ComparatorExpression ex_cond_expr_zero("==", &zero_expr, &x_id_field);
+    // Make a bad rules config json file to trigger rules tests 
 }
 
 
@@ -613,7 +998,7 @@ TEST(SynopsisTest, TestPrioritizeInstPair) {
 
 TEST(SynopsisTest, TestPrioritizeDD) {
     std::string db_path = get_absolute_data_path("dd_example.db");
-    std::string dd_config_path = get_absolute_data_path("dd_example_config.json");
+    std::string dd_config_path = get_absolute_data_path("dd_example_similarity_config.json");
     std::string dd_rules_path = get_absolute_data_path("dd_example_rules.json");
 
     // Test initialization

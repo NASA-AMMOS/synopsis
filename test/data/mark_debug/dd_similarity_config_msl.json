@@ -1,0 +1,42 @@
+{
+  "functions": {
+    "default": [
+      {
+        "key": ["CHEMCAM_LIBS", "SPECTROMETER"],
+        "function": {
+          "diversity_descriptor": [
+            "DD00",
+            "DD01",
+            "DD02",
+            "DD03",
+            "DD04",
+            "DD05",
+            "DD06",
+            "DD07"
+          ],
+          "weights": [
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+          ],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 1.34289567767
+          }
+        }
+      },
+      {
+        "key": ["CHEMISTRY CAMERA REMOTE MICRO-IMAGE", "MASTCAM"],
+        "function": {
+          "diversity_descriptor": ["DD00"],
+          "weights": [1.0],
+          "similarity_type": "gaussian",
+          "similarity_parameters": {
+            "sigma": 1.34289567767
+          }
+        }
+      }
+    ]
+  },
+  "alphas": {
+    "default": 1.0
+  }
+}
