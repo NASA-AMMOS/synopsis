@@ -7,23 +7,50 @@ extracted onboard the spacecraft to summarize data.
 
 ## Team
  - Mark Wronkiewicz
- - Jack Lightholder
- - Lukas Mandrake
  - Gary Doran
+ - Jack Lightholder
+ - Zaki Hasnain
+ - Rex Stockham
+ - Robert Brown (JSTAR team at NASA IV&V)
+ - Scott Zemerick (JSTAR team at NASA IV&V)
+ - Lukas Mandrake
 
-## Setup
+## Building SYNOPSIS
 
 1. Run `cmake -S . -B build` to set up the build directory
 2. Run `cmake --build build` to build the code
 3. Run `cd build && ctest` to execute the tests
 
+## Building SYNOPSIS for cFS
+See the [cFS README file](cfs_integration/README.md) for instructions on building SYNOPSIS in support of a core Flight Software app.
+
 ## Testing
 
 To test from scratch, run the following commands:
 
-1. `git clone git@github.com:NASA-AMMOS/synopsis.git`
-2. `cd synopsis`
-3. Proceed with the Setup steps above
+1. `ssh itlinux-b` (or equivalent machine)
+2. `git clone git@github.jpl.nasa.gov:SYNOPSIS/synopsis.git`
+3. `cd synopsis`
+4. Proceed with the Setup steps above
+
+## For development only: code testing & coverage stats
+
+Note this requires `lcov`
+
+1. `cmake --build build_cov`
+2. `cd build_cov`
+3. `ctest`
+4. `lcov --capture --directory CMakeFiles/synopsis.dir/src --exclude "*sqlite3*" --output-file coverage.info`
+5. `genhtml coverage.info --output-directory out`
+6. View stats HTML `build_cov/out/index.html`
+
+## Compiling rule files
+The rules files are defined in a human readable form via the `.srd` files. To prepare these rules for use within SYNOPSIS, they must be converted to a .json representation. To do that, use the `srd_to_json.py` script as follows:
+```
+python synopsis/python/synopsis/srd_to_json.py \
+/path/to/my/synposis_rules.srd \
+/path/to/my/synposis_rules.json
+```
 
 ## Architecture Overview
 
