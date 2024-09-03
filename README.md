@@ -21,8 +21,12 @@ extracted onboard the spacecraft to summarize data.
 2. Run `cmake --build build` to build the code
 3. Run `cd build && ctest` to execute the tests
 
-## Building SYNOPSIS for cFS
-See the [cFS README file](cfs_integration/README.md) for instructions on building SYNOPSIS in support of a core Flight Software app.
+## SYNOPSIS Integration into cFS
+See the [core Flight Software (cFS) README file](cfs_integration/README.md) for instructions on building SYNOPSIS in support of a cFS app.
+
+### Integration demo with [NOS3](http://www.stf1.com/NOS3Website/Nos3MainTab.php)
+This demo simulates the use of SYNOPSIS (integrated into cFS) to exercise its prioritization functionality. A simple dashboard tracks and visualizes data from the [OWLS-Autonomy project](https://iopscience.iop.org/article/10.3847/PSJ/ad0227) as it moves through the processing steps.
+[![YouTube](http://i.ytimg.com/vi/41cvM5iSn2Y/hqdefault.jpg)](https://www.youtube.com/watch?v=41cvM5iSn2Y)
 
 ## Testing
 
